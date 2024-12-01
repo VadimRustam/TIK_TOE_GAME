@@ -21,6 +21,13 @@ class TicTacToe:
                 button.grid(row=i, column=j) # Размещение кнопки в сетке 
                 self.buttons.append(button) # Добавление кнопки в список кнопок
                 
+        reset_button = tk.Button(
+            self.window,
+            text="Новая игра",
+            command=self.reset_game
+        )
+        reset_button.grid(row=3, column=1)
+                
     def button_click(self, row, col): # Обработка клика по кнопке
         index = 3 * row + col # Вычисляет индекс в списке board по строке и столбцу
         if self.board[index] == '': # Если ячейка пустая
@@ -34,7 +41,8 @@ class TicTacToe:
                 messagebox.showinfo("Ничья!", "Игра окончена вничью!")
                 self.reset_game() # Сброс игры
             else:
-                self.current_player = 'O' if self.current_player == 'X' else 'X' меняет текущего игрока
+                self.current_player = "O"
+                sekf.ai_move()
                 
      def button_click(self, row, col):
         index = 3 * row + col
@@ -77,6 +85,7 @@ class TicTacToe:
                 self.reset_game()
             else:
                 self.current_player = 'X'
+                
     def minimax(self, board, depth, is_maximizing):
         if self.check_winner_board(board, 'O'):
             return 1
