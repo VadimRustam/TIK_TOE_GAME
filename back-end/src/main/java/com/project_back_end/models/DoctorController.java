@@ -1,46 +1,62 @@
-package com.project.back_end.controllers;
+package com.project_back_end.services;
 
 import com.project_back_end.models.Appointment;
 import com.project_back_end.models.Doctor;
-import com.project_back_end.repositories.DoctorRepository;
-import com.project_back_end.services.DoctorService;
-
+import com.project_back_end.repo.AppointmentRepository;
+import com.project_back_end.repo.DoctorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
-@RestController
-@RequestMapping("/api/doctors")
-public class DoctorController {
+/**
+ * Сервис для логики, связанной с врачами.
+ */
+@Service
+public class DoctorService {
+
+    private final DoctorRepository doctorRepository;
+    private final AppointmentRepository appointmentRepository;
 
     @Autowired
-    private DoctorRepository doctorRepository;
+    public DoctorService(DoctorRepository doctorRepository,
+                         AppointmentRepository appointmentRepository) {
+        this.doctorRepository = doctorRepository;
+        this.appointmentRepository = appointmentRepository;
+    }
 
-    @Autowired
-    private DoctorService doctorService;
-
-    @GetMapping
+    // ✅ Получение всех врачей
     public List<Doctor> getAllDoctors() {
         return doctorRepository.findAll();
     }
 
-    @PostMapping
-    public Doctor createDoctor(@RequestBody Doctor doctor) {
+    // ✅ Получение врача по ID
+    public Optional<Doctor> getDoctorById(Long id) {
+        return doctorRepository.findById(id);
+    }
+
+    // ✅ Сохранение врача
+    public Doctor saveDoctor(Doctor doctor) {
         return doctorRepository.save(doctor);
     }
 
-    // ✅ Новый метод для получения доступности врача
-    @GetMapping("/availability")
-    public ResponseEntity<?> getDoctorAvailability(
-            @RequestParam Long doctorId,
-            @RequestParam String date,
-            @RequestHeader("Authorization") String token) {
+    // ✅ Удаление врача
+    public void deleteDoctor(Long id) {
+        doctorRepository.deleteById(id);
+    }
 
-        // TODO: Валидация токена и извлечение роли пользователя
+    // ✅ Авторизация врача
+    public Doctor login(String email, String password) {
+        Doctor doctor = doctorRepository.findByEmail(email);
+        if (doctor != null && doctor.getPassword().equals(password)) {
+            return doctor;
+        }
+        return null;
+    }
 
-        List<Appointment> appointments = doctorService.getAvailabilityByDoctorAndDate(doctorId, date);
-        return ResponseEntity.ok(appointments);
+    // ✅ Получение доступности врача по дате
+    public List<Appointment> getAvailabilityByDoctorAndDate(Long doctorId, String date) {
+        return appointmentRepository.findByDoctorIdAndDate(doctorId, date);
     }
 }
