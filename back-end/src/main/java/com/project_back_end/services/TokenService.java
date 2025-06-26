@@ -1,73 +1,31 @@
 package com.project_back_end.services;
 
-import com.project_back_end.models.Appointment;
-import com.project_back_end.repo.AppointmentRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
-package com.project_back_end.services;
-
-import org.springframework.stereotype.Service;
-import java.util.UUID;
+import java.util.Date;
 
 /**
- * Сервис для генерации и валидации токенов авторизации.
+ * Сервис для генерации и валидации JWT токенов.
  */
 @Service
 public class TokenService {
 
-    // Генерация нового токена
-    public String generateToken(String userEmail) {
-        // В реальном приложении это JWT, здесь — заглушка
-        return UUID.randomUUID().toString() + "-" + userEmail.hashCode();
+    private final String SECRET_KEY = "your_secret_key"; // ❗ Замени на безопасный ключ в .env
+
+    // Генерация токена
+    public String generateToken(String email) {
+        return Jwts.builder()
+                .setSubject(email)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 1 день
+                .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
+                .compact();
     }
 
-    // Проверка токена (заглушка)
+    // Примитивная валидация (заглушка)
     public boolean validateToken(String token) {
-        // Просто пример, не использовать в продакшене
         return token != null && token.length() > 10;
-    }
-}
-
-@Service
-public class AppointmentService {
-
-    private final AppointmentRepository appointmentRepository;
-
-    @Autowired
-    public AppointmentService(AppointmentRepository appointmentRepository) {
-        this.appointmentRepository = appointmentRepository;
-    }
-
-    // Получить все приёмы
-    public List<Appointment> getAllAppointments() {
-        return appointmentRepository.findAll();
-    }
-
-    // Найти приём по ID
-    public Optional<Appointment> getAppointmentById(Long id) {
-        return appointmentRepository.findById(id);
-    }
-
-    // Сохранить/создать новый приём
-    public Appointment saveAppointment(Appointment appointment) {
-        return appointmentRepository.save(appointment);
-    }
-
-    // Удалить приём по ID
-    public void deleteAppointment(Long id) {
-        appointmentRepository.deleteById(id);
-    }
-
-    // Обновить приём
-    public Appointment updateAppointment(Long id, Appointment updated) {
-        return appointmentRepository.findById(id).map(app -> {
-            app.setAppointmentTime(updated.getAppointmentTime());
-            app.setDoctor(updated.getDoctor());
-            app.setPatient(updated.getPatient());
-            return appointmentRepository.save(app);
-        }).orElseThrow(() -> new RuntimeException("Appointment not found"));
     }
 }
